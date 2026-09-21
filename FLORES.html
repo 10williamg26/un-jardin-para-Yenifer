@@ -1,12 +1,323 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/main.css">
-    <link rel="icon" href="img/flowers.png" type="image/x-icon">
-    <title>FLORES</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Poppins:wght@500&display=swap" rel="stylesheet">
+    <style>
+    /* =====================================================
+       GIRASOLES, VENTANA DE MENSAJE Y PANEL DE MÚSICA
+       (estilos añadidos; no tocan las flores de main.css)
+       ===================================================== */
+    :root {
+      --oro: #ffc83a;
+      --oro-claro: #ffe28a;
+      --semilla: #2b1405;
+      --crema: #fff1cf;
+      --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+      --sans: 'Poppins', system-ui, sans-serif;
+    }
+
+    /* ---------- Girasoles flotantes ---------- */
+    .girasol {
+      --s: clamp(54px, 9vmin, 92px);
+      position: fixed;
+      left: calc(var(--x) * 1%);
+      top: calc(var(--y) * 1%);
+      width: var(--s);
+      height: var(--s);
+      margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2);
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: none;
+      cursor: pointer;
+      z-index: 900;
+      -webkit-tap-highlight-color: transparent;
+
+      opacity: 0;
+      scale: .3;
+      visibility: hidden;
+      transition: opacity .9s ease, scale .9s cubic-bezier(.2, 1.35, .4, 1), visibility 0s;
+      animation: girasol-flotar var(--dur, 5s) ease-in-out var(--delay, 0s) infinite alternate;
+    }
+    .girasol.visible {
+      opacity: 1;
+      scale: 1;
+      visibility: visible;
+    }
+    .girasol svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 10px rgba(255, 190, 0, .5));
+      transition: transform .7s cubic-bezier(.2, .8, .2, 1), filter .3s ease;
+    }
+    .girasol:hover svg,
+    .girasol:focus-visible svg {
+      transform: rotate(28deg) scale(1.12);
+      filter: drop-shadow(0 0 20px rgba(255, 214, 70, .95));
+    }
+    .girasol:active svg { transform: rotate(28deg) scale(.96); }
+    .girasol:focus-visible {
+      outline: 2px solid var(--crema);
+      outline-offset: 4px;
+    }
+    @keyframes girasol-flotar {
+      from { transform: translateY(0) rotate(-3deg); }
+      to   { transform: translateY(-11px) rotate(3deg); }
+    }
+
+    /* ---------- Ventana del mensaje ---------- */
+    .carta-fondo {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0);
+      -webkit-backdrop-filter: blur(0);
+              backdrop-filter: blur(0);
+      transition: background .35s ease, backdrop-filter .35s ease, -webkit-backdrop-filter .35s ease;
+    }
+    .carta-fondo[hidden] { display: none; }
+    .carta-fondo.abierta {
+      background: rgba(0, 0, 0, .68);
+      -webkit-backdrop-filter: blur(6px);
+              backdrop-filter: blur(6px);
+    }
+
+    .carta {
+      position: relative;
+      width: min(94vw, 540px);
+      padding: 46px clamp(24px, 6vw, 46px) 34px;
+      color: var(--crema);
+      background:
+        radial-gradient(120% 70% at 50% 0%, rgba(255, 200, 58, .14), transparent 60%),
+        linear-gradient(165deg, #2a1707 0%, #170c03 100%);
+      border: 1px solid rgba(255, 200, 58, .45);
+      border-radius: 26px;
+      box-shadow:
+        0 0 0 7px rgba(255, 200, 58, .06),
+        0 30px 80px rgba(0, 0, 0, .75),
+        0 0 70px rgba(255, 176, 0, .2);
+      text-align: center;
+
+      opacity: 0;
+      transform: scale(.35) translateY(14px);
+      transition: opacity .3s ease, transform .45s cubic-bezier(.2, 1.05, .3, 1);
+    }
+    .carta-fondo.abierta .carta {
+      opacity: 1;
+      transform: none;
+    }
+
+    .carta__flor {
+      display: block;
+      width: 58px;
+      height: 58px;
+      margin: -84px auto 14px;
+      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, .6)) drop-shadow(0 0 14px rgba(255, 190, 0, .5));
+    }
+    .carta-fondo.abierta .carta__flor { animation: carta-giro 1.4s cubic-bezier(.2, .8, .2, 1) .1s backwards; }
+    @keyframes carta-giro { from { transform: rotate(-140deg) scale(.4); } }
+
+    .carta__titulo {
+      margin: 0 0 18px;
+      padding: 0 30px;
+      text-wrap: balance;
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 600;
+      font-size: clamp(1.9rem, 5vw, 2.5rem);
+      line-height: 1.15;
+      color: var(--oro-claro);
+      text-shadow: 0 0 24px rgba(255, 190, 0, .35);
+    }
+
+    .carta__cuerpo {
+      max-height: min(46vh, 380px);
+      overflow-y: auto;
+      padding: 2px 6px;
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: clamp(1.2rem, 3.2vw, 1.4rem);
+      line-height: 1.6;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 200, 58, .5) transparent;
+    }
+    .carta__cuerpo:focus-visible { outline: 1px dashed rgba(255, 226, 138, .6); outline-offset: 4px; }
+    .carta__cuerpo p { margin: 0 0 1em; white-space: pre-line; }
+    .carta__cuerpo p:last-child { margin-bottom: 0; }
+
+    .carta__firma {
+      margin: 22px 0 0;
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.25rem;
+      color: var(--oro);
+      text-align: right;
+    }
+    .carta__firma[hidden] { display: none; }
+
+    .carta__cerrar {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      width: 40px;
+      height: 40px;
+      border: 1px solid rgba(255, 200, 58, .4);
+      border-radius: 50%;
+      background: rgba(255, 200, 58, .08);
+      color: var(--oro-claro);
+      font: 400 24px/1 var(--sans);
+      cursor: pointer;
+      transition: background .2s ease, transform .3s ease;
+    }
+    .carta__cerrar:hover { background: rgba(255, 200, 58, .22); transform: rotate(90deg); }
+    .carta__cerrar:focus-visible { outline: 2px solid var(--crema); outline-offset: 3px; }
+
+    /* ---------- Panel de música ---------- */
+    .musica {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      width: max-content;
+      max-width: 94vw;
+    }
+    .musica__botones {
+      display: flex;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(12, 8, 3, .6);
+      border: 1px solid rgba(255, 208, 80, .32);
+      border-radius: 999px;
+      -webkit-backdrop-filter: blur(8px);
+              backdrop-filter: blur(8px);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, .45);
+    }
+    .musica__btn {
+      position: relative;
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid rgba(255, 208, 80, .5);
+      border-radius: 50%;
+      background: transparent;
+      color: var(--oro-claro);
+      font: 500 15px/1 var(--sans);
+      cursor: pointer;
+      transition: background .2s ease, color .2s ease, box-shadow .2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .musica__btn:hover { background: rgba(255, 208, 80, .16); }
+    /* el primer botón (música de fondo) va separado de los números */
+    .musica__btn--fondo { margin-right: 8px; }
+    .musica__btn--fondo::after {
+      content: '';
+      position: absolute;
+      right: -9px;
+      top: 22%;
+      height: 56%;
+      width: 1px;
+      background: rgba(255, 208, 80, .35);
+    }
+    .musica__btn .num svg { display: block; width: 24px; height: 24px; }
+    .musica__btn:focus-visible { outline: 2px solid var(--crema); outline-offset: 2px; }
+    .musica__btn.activa {
+      background: var(--oro);
+      color: var(--semilla);
+      border-color: var(--oro);
+      box-shadow: 0 0 16px rgba(255, 200, 58, .65);
+    }
+    .musica__btn .eq,
+    .musica__btn .play { display: none; }
+    .musica__btn.activa .num { display: none; }
+    .musica__btn.activa.sonando .eq { display: flex; }
+    .musica__btn.activa:not(.sonando) .play { display: block; }
+
+    .musica__btn .eq {
+      align-items: flex-end;
+      gap: 2px;
+      height: 14px;
+    }
+    .musica__btn .eq i {
+      display: block;
+      width: 3px;
+      height: 100%;
+      background: currentColor;
+      border-radius: 1px;
+      transform-origin: bottom;
+      animation: musica-barra .9s ease-in-out infinite alternate;
+    }
+    .musica__btn .eq i:nth-child(2) { animation-delay: -.3s; animation-duration: .7s; }
+    .musica__btn .eq i:nth-child(3) { animation-delay: -.6s; animation-duration: 1.1s; }
+    @keyframes musica-barra { from { transform: scaleY(.25); } to { transform: scaleY(1); } }
+
+    .musica__btn .play {
+      width: 0;
+      height: 0;
+      margin-left: 3px;
+      border-style: solid;
+      border-width: 7px 0 7px 11px;
+      border-color: transparent transparent transparent currentColor;
+    }
+
+    .musica__estado,
+    .pista {
+      margin: 0;
+      max-width: 88vw;
+      text-align: center;
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 500;
+      font-size: 1.1rem;
+      line-height: 1.25;
+      color: var(--oro-claro);
+      text-shadow: 0 1px 8px #000, 0 0 14px rgba(0, 0, 0, .8);
+    }
+    .musica__estado:empty { display: none; }
+    .musica__estado.aviso { color: #ffb4a0; }
+    .pista {
+      opacity: 0;
+      transition: opacity 1.2s ease;
+      pointer-events: none;
+    }
+    .pista.ver { opacity: .9; }
+
+    @media (max-width: 420px) {
+      .musica__botones { gap: 6px; padding: 7px 10px; }
+      .musica__btn { width: 36px; height: 36px; }
+      .musica__btn--fondo { margin-right: 6px; }
+      .musica__btn--fondo::after { right: -7px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .girasol,
+      .girasol svg,
+      .carta,
+      .carta-fondo,
+      .carta__flor,
+      .musica__btn .eq i,
+      .pista { animation: none !important; transition-duration: .01s !important; }
+    }
+    </style>
+    <link rel="icon" href="img/flowers.png" type="image/png">
+    <title>Un jardín para ti</title>
 </head>
 
 <body class="container">
@@ -305,20 +616,454 @@
       </div>
     </div>
 
-    <!-- Agregar la etiqueta de audio -->
-    <audio id="floricienta" autoplay loop>
-        <source src="img/Floricienta.mp3" type="audio/mpeg">
-        Tu navegador no soporta la etiqueta de audio.
-    </audio>
+    <!-- Iconos SVG del girasol (se reutilizan con <use>) -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+      <defs>
+        <radialGradient id="gs-petalo-atras" cx="50%" cy="50%" r="50%">
+          <stop offset="35%" stop-color="#f0a000"/>
+          <stop offset="100%" stop-color="#ffb81f"/>
+        </radialGradient>
+        <radialGradient id="gs-petalo" cx="50%" cy="50%" r="50%">
+          <stop offset="30%" stop-color="#ffcf3d"/>
+          <stop offset="100%" stop-color="#ffe680"/>
+        </radialGradient>
+        <radialGradient id="gs-centro" cx="45%" cy="40%" r="65%">
+          <stop offset="0%" stop-color="#7a4515"/>
+          <stop offset="60%" stop-color="#3b1d08"/>
+          <stop offset="100%" stop-color="#1f0e03"/>
+        </radialGradient>
+        <symbol id="girasol" viewBox="0 0 100 100">
+          <path d="M50 50 C39 24.15, 43.95 13, 50 3 C56.05 13, 61 24.15, 50 50 Z" transform="rotate(0.00 50 50)" fill="url(#gs-petalo-atras)" stroke="#b87400" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C39 24.15, 43.95 13, 50 3 C56.05 13, 61 24.15, 50 50 Z" transform="rotate(22.50 50 50)" fill="url(#gs-petalo-atras)" stroke="#b87400" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C39 24.15, 43.95 13, 50 3 C56.05 13, 61 24.15, 50 50 Z" transform="rotate(45.00 50 50)" fill="url(#gs-petalo-atras)" stroke="#b87400" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C39 24.15, 43.95 13, 50 3 C56.05 13, 61 24.15, 50 50 Z" transform="rotate(67.50 50 50)" fill="url(#gs-petalo-atras)" stroke="#b87400" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C39 24.15, 43.95 13, 50 3 C56.05 13, 61 24.15, 50 50 Z" transform="rotate(90.00 50 50)" fill="url(#gs-petalo-atras)" stroke="#b87400" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C39 24.15, 43.95 13, 50 3 C56.05 13, 61 24.15, 50 50 Z" transform="rotate(112.50 50 50)" fill="url(#gs-petalo-atras)" stroke="#b87400" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C39 24.15, 43.95 13, 50 3 C56.05 13, 61 24.15, 50 50 Z" transform="rotate(135.00 50 50)" fill="url(#gs-petalo-atras)" stroke="#b87400" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C39 24.15, 43.95 13, 50 3 C56.05 13, 61 24.15, 50 50 Z" transform="rotate(157.50 50 50)" fill="url(#gs-petalo-atras)" stroke="#b87400" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C39 24.15, 43.95 13, 50 3 C56.05 13, 61 24.15, 50 50 Z" transform="rotate(180.00 50 50)" fill="url(#gs-petalo-atras)" stroke="#b87400" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C39 24.15, 43.95 13, 50 3 C56.05 13, 61 24.15, 50 50 Z" transform="rotate(202.50 50 50)" fill="url(#gs-petalo-atras)" stroke="#b87400" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C39 24.15, 43.95 13, 50 3 C56.05 13, 61 24.15, 50 50 Z" transform="rotate(225.00 50 50)" fill="url(#gs-petalo-atras)" stroke="#b87400" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C39 24.15, 43.95 13, 50 3 C56.05 13, 61 24.15, 50 50 Z" transform="rotate(247.50 50 50)" fill="url(#gs-petalo-atras)" stroke="#b87400" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C39 24.15, 43.95 13, 50 3 C56.05 13, 61 24.15, 50 50 Z" transform="rotate(270.00 50 50)" fill="url(#gs-petalo-atras)" stroke="#b87400" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C39 24.15, 43.95 13, 50 3 C56.05 13, 61 24.15, 50 50 Z" transform="rotate(292.50 50 50)" fill="url(#gs-petalo-atras)" stroke="#b87400" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C39 24.15, 43.95 13, 50 3 C56.05 13, 61 24.15, 50 50 Z" transform="rotate(315.00 50 50)" fill="url(#gs-petalo-atras)" stroke="#b87400" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C39 24.15, 43.95 13, 50 3 C56.05 13, 61 24.15, 50 50 Z" transform="rotate(337.50 50 50)" fill="url(#gs-petalo-atras)" stroke="#b87400" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C40 26.9, 44.5 18, 50 8 C55.5 18, 60 26.9, 50 50 Z" transform="rotate(11.25 50 50)" fill="url(#gs-petalo)" stroke="#e0a100" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C40 26.9, 44.5 18, 50 8 C55.5 18, 60 26.9, 50 50 Z" transform="rotate(33.75 50 50)" fill="url(#gs-petalo)" stroke="#e0a100" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C40 26.9, 44.5 18, 50 8 C55.5 18, 60 26.9, 50 50 Z" transform="rotate(56.25 50 50)" fill="url(#gs-petalo)" stroke="#e0a100" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C40 26.9, 44.5 18, 50 8 C55.5 18, 60 26.9, 50 50 Z" transform="rotate(78.75 50 50)" fill="url(#gs-petalo)" stroke="#e0a100" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C40 26.9, 44.5 18, 50 8 C55.5 18, 60 26.9, 50 50 Z" transform="rotate(101.25 50 50)" fill="url(#gs-petalo)" stroke="#e0a100" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C40 26.9, 44.5 18, 50 8 C55.5 18, 60 26.9, 50 50 Z" transform="rotate(123.75 50 50)" fill="url(#gs-petalo)" stroke="#e0a100" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C40 26.9, 44.5 18, 50 8 C55.5 18, 60 26.9, 50 50 Z" transform="rotate(146.25 50 50)" fill="url(#gs-petalo)" stroke="#e0a100" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C40 26.9, 44.5 18, 50 8 C55.5 18, 60 26.9, 50 50 Z" transform="rotate(168.75 50 50)" fill="url(#gs-petalo)" stroke="#e0a100" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C40 26.9, 44.5 18, 50 8 C55.5 18, 60 26.9, 50 50 Z" transform="rotate(191.25 50 50)" fill="url(#gs-petalo)" stroke="#e0a100" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C40 26.9, 44.5 18, 50 8 C55.5 18, 60 26.9, 50 50 Z" transform="rotate(213.75 50 50)" fill="url(#gs-petalo)" stroke="#e0a100" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C40 26.9, 44.5 18, 50 8 C55.5 18, 60 26.9, 50 50 Z" transform="rotate(236.25 50 50)" fill="url(#gs-petalo)" stroke="#e0a100" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C40 26.9, 44.5 18, 50 8 C55.5 18, 60 26.9, 50 50 Z" transform="rotate(258.75 50 50)" fill="url(#gs-petalo)" stroke="#e0a100" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C40 26.9, 44.5 18, 50 8 C55.5 18, 60 26.9, 50 50 Z" transform="rotate(281.25 50 50)" fill="url(#gs-petalo)" stroke="#e0a100" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C40 26.9, 44.5 18, 50 8 C55.5 18, 60 26.9, 50 50 Z" transform="rotate(303.75 50 50)" fill="url(#gs-petalo)" stroke="#e0a100" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C40 26.9, 44.5 18, 50 8 C55.5 18, 60 26.9, 50 50 Z" transform="rotate(326.25 50 50)" fill="url(#gs-petalo)" stroke="#e0a100" stroke-width=".5" stroke-linejoin="round"/>
+          <path d="M50 50 C40 26.9, 44.5 18, 50 8 C55.5 18, 60 26.9, 50 50 Z" transform="rotate(348.75 50 50)" fill="url(#gs-petalo)" stroke="#e0a100" stroke-width=".5" stroke-linejoin="round"/>
+          <circle cx="50" cy="50" r="19.5" fill="url(#gs-centro)" stroke="#8a4b12" stroke-width="1.2"/>
+          <g fill="#ffcf5a" opacity=".6">
+            <circle cx="48.36" cy="51.50" r="0.86"/>
+            <circle cx="50.28" cy="46.87" r="0.86"/>
+            <circle cx="52.34" cy="53.06" r="0.87"/>
+            <circle cx="45.62" cy="49.22" r="0.88"/>
+            <circle cx="54.20" cy="47.33" r="0.88"/>
+            <circle cx="48.59" cy="55.26" r="0.89"/>
+            <circle cx="47.29" cy="44.78" r="0.89"/>
+            <circle cx="55.91" cy="52.16" r="0.90"/>
+            <circle cx="43.83" cy="52.55" r="0.91"/>
+            <circle cx="52.98" cy="43.63" r="0.91"/>
+            <circle cx="52.21" cy="57.04" r="0.92"/>
+            <circle cx="43.33" cy="46.14" r="0.93"/>
+            <circle cx="57.83" cy="48.28" r="0.93"/>
+            <circle cx="45.21" cy="56.81" r="0.94"/>
+            <circle cx="48.89" cy="41.45" r="0.95"/>
+            <circle cx="56.80" cy="55.74" r="0.95"/>
+            <circle cx="40.83" cy="50.38" r="0.96"/>
+            <circle cx="56.69" cy="43.34" r="0.96"/>
+            <circle cx="49.55" cy="59.69" r="0.97"/>
+            <circle cx="43.63" cy="42.36" r="0.98"/>
+            <circle cx="60.10" cy="51.36" r="0.98"/>
+            <circle cx="41.43" cy="55.96" r="0.99"/>
+            <circle cx="52.34" cy="39.59" r="1.00"/>
+            <circle cx="55.42" cy="59.46" r="1.00"/>
+            <circle cx="39.40" cy="46.62" r="1.01"/>
+            <circle cx="60.30" cy="45.24" r="1.02"/>
+            <circle cx="45.54" cy="60.66" r="1.02"/>
+            <circle cx="46.02" cy="38.92" r="1.03"/>
+            <circle cx="60.60" cy="55.58" r="1.03"/>
+            <circle cx="38.22" cy="53.10" r="1.04"/>
+            <circle cx="56.70" cy="39.58" r="1.05"/>
+            <circle cx="52.13" cy="62.40" r="1.05"/>
+            <circle cx="39.90" cy="42.17" r="1.06"/>
+            <circle cx="62.93" cy="48.93" r="1.07"/>
+            <circle cx="41.06" cy="59.66" r="1.07"/>
+            <circle cx="50.07" cy="36.65" r="1.08"/>
+            <circle cx="59.09" cy="60.02" r="1.09"/>
+            <circle cx="36.34" cy="48.73" r="1.09"/>
+            <circle cx="61.07" cy="41.60" r="1.10"/>
+            <circle cx="47.48" cy="63.84" r="1.10"/>
+            <circle cx="42.41" cy="37.94" r="1.11"/>
+            <circle cx="63.91" cy="53.81" r="1.12"/>
+            <circle cx="37.02" cy="56.66" r="1.12"/>
+            <circle cx="55.13" cy="36.16" r="1.13"/>
+            <circle cx="55.62" cy="63.82" r="1.14"/>
+            <circle cx="36.37" cy="43.54" r="1.14"/>
+            <circle cx="64.58" cy="45.51" r="1.15"/>
+            <circle cx="42.20" cy="63.30" r="1.16"/>
+            <circle cx="46.73" cy="34.77" r="1.16"/>
+            <circle cx="62.82" cy="59.11" r="1.17"/>
+            <circle cx="34.23" cy="51.96" r="1.17"/>
+            <circle cx="60.40" cy="37.79" r="1.18"/>
+            <circle cx="50.59" cy="66.19" r="1.19"/>
+            <circle cx="38.53" cy="38.35" r="1.19"/>
+            <circle cx="66.48" cy="50.85" r="1.20"/>
+          </g>
+        </symbol>
+      </defs>
+    </svg>
 
-     <!-- Script del mensaje -->
+    <!-- Girasoles flotantes (los crea el script) -->
+    <div id="girasoles"></div>
+
+    <!-- Ventana del mensaje -->
+    <div class="carta-fondo" id="carta" hidden>
+      <div class="carta" role="dialog" aria-modal="true" aria-labelledby="carta-titulo">
+        <button class="carta__cerrar" type="button" aria-label="Cerrar mensaje">&times;</button>
+        <svg class="carta__flor" viewBox="0 0 100 100" aria-hidden="true"><use href="#girasol"/></svg>
+        <h2 class="carta__titulo" id="carta-titulo"></h2>
+        <div class="carta__cuerpo" tabindex="0"></div>
+        <p class="carta__firma" hidden></p>
+      </div>
+    </div>
+
+    <!-- Panel de música -->
+    <div class="musica" role="group" aria-label="Elegir canción">
+      <div class="musica__botones" id="musica-botones"></div>
+      <p class="musica__estado" id="musica-estado" aria-live="polite"></p>
+      <p class="pista" id="pista">Toca un girasol para leer lo que guardé para ti</p>
+    </div>
+
+    <audio id="reproductor" preload="auto"></audio>
+
     <script>
-        window.onload = function() {
-            alert("Gracias por tu cariño, comprensión y amistad durante todo este tiempo");
-        };
+    /* ============================================================
+       ✏️  EDITA AQUÍ  ✏️
+       Todo lo que vas a personalizar está en este bloque.
+       ============================================================ */
+
+    /* ---------- 1) Los 6 girasoles y sus mensajes ----------
+       titulo : encabezado de la ventana
+       texto  : el mensaje. Deja una línea EN BLANCO para separar párrafos.
+                Un salto de línea simple también se respeta.
+                (Escríbelo entre comillas invertidas ` ` y no uses ` dentro del texto)
+       firma  : línea final (déjala "" si no quieres firma)
+       x, y   : posición del girasol en pantalla, en % (x: 0 = izquierda, 100 = derecha;
+                y: 0 = arriba, 100 = abajo). Muévelos si tapan alguna flor. */
+    const GIRASOLES = [
+      { // Girasol 1
+        titulo: "Gracias",
+        texto: `Gracias por tu amistad durante todo este tiempo, por tu confianza, por cada momento de alegria, por cada abrazo, por compartir tantas cosas conmigo.
+
+                `,
+        firma: "",
+        x: 9, y: 20
+      },
+      { // Girasol 2
+        titulo: "Lo que más me gusta de ti",
+        texto: `Lo que me gusta de ti no es solo una cosa sino un conjunto de cualidades que te hacen ser tú, como por ejemplo tus gestos, tu manera de hablar, la forma de ver las cosas, tu sencillez y hasta esas cosas que quizá tu no consideres especiales. 
+
+Pero sobre todo, lo que mas me gusta es tu mirada esos ojos hermosos que aveces siento que refleja tristeza, dudas, cosas que quizá llevas dentro y que no siempre muestras. Y  creo que detrás de esos ojos hay una persona que merece muchísimo cariño, que merece sentirse querida, valorada y comprendida. Quizá por eso tu mirada fue una de las cosas que más me atrapó de ti… porque incluso cuando no decías nada, sentía que tus ojos tenían mucho que contar.`,
+        firma: "",
+        x: 91, y: 18
+      },
+      { // Girasol 3
+        titulo: "Un recuerdo",
+        texto: `
+                Me quedo con el recuerdo de aquellas noches en las que nos quedabamos hablando, caminando y evitando a los locos de la avenida, recordare las risas, los abrazos bajo la lluvia, con estar mojado y aun asi no querer irme a cambiarme de ropa por pasar mas tiempo contigo. Momentos que duraron poco pero significaron mucho.`,
+        firma: "",
+        x: 20, y: 37
+      },
+      { // Girasol 4
+        titulo: "Lo que deseo para ti",
+        texto: `Sinceramente deseo que seas feliz, que cumplas cada una de tus metas, que encuentres tranquilidad, que nunca dejes de luchar por lo que quieres y que encuentres personas que sepan valorar lo que eres. Nunca dudes de ti eres una chica que se merece todo lo bueno de este mundo y nunca recibas menos de lo que mereces.
+
+                "Y que cuando el cielo se nuble, recuerdes que los girasoles también giran buscando el sol".`,
+        firma: "",
+        x: 76, y: 35
+      },
+      { // Girasol 5
+        titulo: "Por si un día dudas",
+        texto: `Por si un día dudas: Recuerda que vales mucho, y todo lo que has tenido que pasar para llegar hasta donde estas ahora, aun tienes mucho que demostrar.
+
+                "No hace falta que hagas nada extraordinario para merecer cariño. Con ser tú es suficiente".`,
+        firma: "",
+        x: 10, y: 53
+      },
+      { // Girasol 6
+        titulo: "Y ahora, lo que quiero decirte",
+        texto: `Estas flores no se marchitan. Se quedan aquí, encendidas, esperándote cada vez que quieras volver.
+
+                Gracias por dejarme ser parte de tu historia.`,
+        firma: "— Para ti, siempre",
+        x: 90, y: 51
+      }
+    ];
+
+    /* ---------- 2) Las canciones (6 en total) ----------
+       archivo : nombre del mp3 (debe existir en la carpeta indicada abajo)
+       titulo  : el nombre que se muestra debajo del panel
+
+       CANCION_FONDO → suena sola al entrar al jardín. Es el primer botón del panel (el de la flor).
+       CANCIONES     → las otras 5, que la persona puede elegir después (botones 1 al 5). */
+    const CANCION_FONDO = { archivo: "Floricienta.mp3", titulo: "Floricienta" };
+
+    const CANCIONES = [
+      { archivo: "cancion1.mp3", titulo: "Canción 1" },
+      { archivo: "cancion2.mp3", titulo: "Canción 2" },
+      { archivo: "cancion3.mp3", titulo: "Canción 3" },
+      { archivo: "cancion4.mp3", titulo: "Canción 4" },
+      { archivo: "cancion5.mp3", titulo: "Canción 5" }
+    ];
+
+    /* Carpeta donde están los 6 mp3, relativa a este archivo.
+       "img/"    → dentro de la carpeta img  (así está ahora)
+       ""        → junto a FLORES.html
+       "musica/" → dentro de una carpeta llamada musica  (no olvides la "/" final) */
+    const CARPETA_MUSICA = "img/";
+
+    const VOLUMEN = 0.7;                 // 0 (mudo) a 1 (máximo)
+    const SIGUIENTE_AL_TERMINAR = true;  // true: al acabar una de las 5 canciones pasa a la siguiente;
+                                         //       tras la 5 vuelve Floricienta
+                                         // false: la canción elegida se repite en bucle
+                                         // (Floricienta, la de fondo, siempre se repite en bucle)
+
+    /* ============================================================
+       FIN DE LO EDITABLE — el resto es la lógica, no hace falta tocarla
+       ============================================================ */
+    </script>
+
+    <script>
+    (function () {
+      'use strict';
+
+      var $ = function (s, r) { return (r || document).querySelector(s); };
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var SVG_NS = 'http://www.w3.org/2000/svg';
+      var POS_DEFECTO = [[9, 20], [91, 18], [20, 37], [76, 35], [10, 53], [90, 51]];
+
+      function icono(clase) {
+        var svg = document.createElementNS(SVG_NS, 'svg');
+        svg.setAttribute('viewBox', '0 0 100 100');
+        svg.setAttribute('aria-hidden', 'true');
+        if (clase) svg.setAttribute('class', clase);
+        var use = document.createElementNS(SVG_NS, 'use');
+        use.setAttribute('href', '#girasol');
+        svg.appendChild(use);
+        return svg;
+      }
+
+      /* ---------------- Ventana del mensaje ---------------- */
+      var fondo = $('#carta');
+      var carta = $('.carta', fondo);
+      var tituloEl = $('#carta-titulo');
+      var cuerpo = $('.carta__cuerpo', fondo);
+      var firmaEl = $('.carta__firma', fondo);
+      var btnCerrar = $('.carta__cerrar', fondo);
+      var pista = $('#pista');
+      var ultimoBoton = null;
+      var timerCierre = null;
+      var pistaTimer = null;
+
+      function parrafos(texto) {
+        return String(texto || '').split(/\n\s*\n/).map(function (t) {
+          return t.trim();
+        }).filter(Boolean).map(function (t) {
+          var p = document.createElement('p');
+          p.textContent = t;
+          return p;
+        });
+      }
+
+      function ocultarPista() {
+        clearTimeout(pistaTimer);
+        pista.classList.remove('ver');
+      }
+
+      function abrir(i, boton) {
+        var g = GIRASOLES[i];
+        if (!g) return;
+        clearTimeout(timerCierre);
+        ocultarPista();
+
+        tituloEl.textContent = g.titulo || '';
+        cuerpo.textContent = '';
+        parrafos(g.texto).forEach(function (p) { cuerpo.appendChild(p); });
+        firmaEl.textContent = g.firma || '';
+        firmaEl.hidden = !g.firma;
+        ultimoBoton = boton;
+
+        fondo.hidden = false;
+        /* la ventana "nace" desde el girasol que tocaste */
+        var rb = boton.getBoundingClientRect();
+        var rf = fondo.getBoundingClientRect();
+        var ox = rb.left + rb.width / 2 - rf.left - carta.offsetLeft;
+        var oy = rb.top + rb.height / 2 - rf.top - carta.offsetTop;
+        carta.style.transformOrigin = ox + 'px ' + oy + 'px';
+
+        void fondo.offsetWidth; /* fuerza el reflow para que la transición arranque */
+        fondo.classList.add('abierta');
+        cuerpo.scrollTop = 0;
+        btnCerrar.focus({ preventScroll: true });
+      }
+
+      function cerrar() {
+        if (fondo.hidden) return;
+        fondo.classList.remove('abierta');
+        timerCierre = setTimeout(function () { fondo.hidden = true; }, reduce ? 0 : 340);
+        if (ultimoBoton) ultimoBoton.focus({ preventScroll: true });
+      }
+
+      btnCerrar.addEventListener('click', cerrar);
+      fondo.addEventListener('click', function (e) { if (e.target === fondo) cerrar(); });
+      document.addEventListener('keydown', function (e) {
+        if (fondo.hidden) return;
+        if (e.key === 'Escape') { cerrar(); return; }
+        if (e.key === 'Tab') {
+          var f = [btnCerrar, cuerpo];
+          var i = f.indexOf(document.activeElement);
+          if (i === -1) { e.preventDefault(); f[0].focus(); }
+          else if (e.shiftKey && i === 0) { e.preventDefault(); f[f.length - 1].focus(); }
+          else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+        }
+      });
+
+      /* ---------------- Girasoles flotantes ---------------- */
+      var contenedor = $('#girasoles');
+      GIRASOLES.forEach(function (g, i) {
+        var d = POS_DEFECTO[i] || [50, 30];
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'girasol';
+        b.title = g.titulo || '';
+        b.setAttribute('aria-label', 'Abrir mensaje: ' + (g.titulo || 'girasol ' + (i + 1)));
+        b.style.setProperty('--x', isFinite(g.x) && g.x !== null ? g.x : d[0]);
+        b.style.setProperty('--y', isFinite(g.y) && g.y !== null ? g.y : d[1]);
+        b.style.setProperty('--dur', (4.6 + (i % 3) * 0.7) + 's');
+        b.style.setProperty('--delay', (-i * 0.9) + 's');
+        b.appendChild(icono());
+        b.addEventListener('click', function () { abrir(i, b); });
+        contenedor.appendChild(b);
+        /* aparecen cuando las flores terminan de florecer */
+        setTimeout(function () { b.classList.add('visible'); }, reduce ? 0 : 4200 + i * 320);
+      });
+
+      /* pista suave, solo al principio */
+      pistaTimer = setTimeout(function () {
+        pista.classList.add('ver');
+        pistaTimer = setTimeout(ocultarPista, 12000);
+      }, reduce ? 0 : 6500);
+
+      /* ---------------- Música ---------------- */
+      var audio = $('#reproductor');
+      var panel = $('#musica-botones');
+      var estado = $('#musica-estado');
+      var LISTA = [CANCION_FONDO].concat(CANCIONES); /* posición 0 = música de fondo */
+      var actual = -1;
+      var bloqueado = false; /* el navegador impidió el autoplay */
+      var fallo = false;     /* no se encontró el archivo */
+      var botones = [];
+
+      audio.volume = VOLUMEN;
+
+      function pintar() {
+        botones.forEach(function (b, i) {
+          var act = i === actual;
+          b.classList.toggle('activa', act);
+          b.classList.toggle('sonando', act && !audio.paused && !fallo);
+          b.setAttribute('aria-pressed', act ? 'true' : 'false');
+        });
+        var c = LISTA[actual];
+        var msg = '';
+        if (fallo && c) msg = 'No encuentro ' + CARPETA_MUSICA + c.archivo;
+        else if (bloqueado) msg = 'Toca la pantalla para activar la música';
+        else if (c) msg = c.titulo || '';
+        estado.textContent = msg;
+        estado.classList.toggle('aviso', !!fallo);
+      }
+
+      function reproducir() {
+        var p = audio.play();
+        if (p && p.then) {
+          p.then(function () { bloqueado = false; pintar(); })
+           .catch(function (err) {
+             if (err && err.name === 'NotAllowedError') bloqueado = true;
+             pintar();
+           });
+        }
+      }
+
+      function ir(i) {
+        actual = i;
+        fallo = false;
+        audio.src = CARPETA_MUSICA + LISTA[i].archivo;
+        pintar();
+        reproducir();
+      }
+
+      LISTA.forEach(function (c, i) {
+        var esFondo = i === 0;
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'musica__btn' + (esFondo ? ' musica__btn--fondo' : '');
+        b.title = c.titulo || '';
+        b.setAttribute('aria-label', (esFondo ? 'Música de fondo' : 'Canción ' + i) + ': ' + (c.titulo || c.archivo));
+        b.setAttribute('aria-pressed', 'false');
+        b.innerHTML = '<span class="num">' +
+                        (esFondo ? '<svg viewBox="0 0 100 100" aria-hidden="true"><use href="#girasol"/></svg>' : i) +
+                      '</span>' +
+                      '<span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>' +
+                      '<span class="play" aria-hidden="true"></span>';
+        b.addEventListener('click', function () {
+          if (bloqueado) { reproducir(); return; }           /* primer toque: activa el sonido */
+          if (i === actual && !fallo) {                       /* misma canción: pausa / reanuda */
+            if (audio.paused) reproducir(); else audio.pause();
+          } else {
+            ir(i);
+          }
+        });
+        panel.appendChild(b);
+        botones.push(b);
+      });
+
+      audio.addEventListener('play', pintar);
+      audio.addEventListener('pause', pintar);
+      audio.addEventListener('error', function () { fallo = true; pintar(); });
+      audio.addEventListener('ended', function () {
+        if (actual === 0 || !SIGUIENTE_AL_TERMINAR) {   /* la de fondo (o cualquiera, si se pidió bucle) se repite */
+          audio.currentTime = 0;
+          reproducir();
+        } else {
+          ir(actual === LISTA.length - 1 ? 0 : actual + 1); /* tras la 5 vuelve la de fondo */
+        }
+      });
+
+      /* Si el navegador bloqueó el autoplay, el primer toque en cualquier parte lo activa */
+      function desbloquear(e) {
+        if (bloqueado && !(e.target.closest && e.target.closest('.musica__btn'))) reproducir();
+      }
+      document.addEventListener('pointerup', desbloquear);
+      document.addEventListener('keydown', desbloquear);
+
+      ir(0); /* al entrar al jardín suena la música de fondo */
+    })();
     </script>
 
     <script src="main.js"></script>
-    
+
 </body>
 </html>

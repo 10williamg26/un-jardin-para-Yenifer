@@ -1,53 +1,142 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#000000">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="icon" href="img/flowers.png" type="image/x-icon">
-    <title>FLORES</title>
+    <link rel="icon" href="img/flowers.png" type="image/png">
+    <title>Un jardín para ti</title>
+
+    <style>
+        /* Ajustes de esta página (encima de css/style.css) */
+        :root {
+            --crema: #fff1cf;
+            --oro: #ffc83a;
+            --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+        }
+
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            height: auto;
+            min-height: 100vh;
+            padding: 32px 20px;
+            text-align: center;
+            background: radial-gradient(ellipse at 50% 42%, #2b2000 0%, #0d0a00 48%, #000 78%);
+        }
+
+        /* Las frases usan la serif cursiva: se leen como una carta */
+        .description {
+            margin: 0;
+            font-family: var(--serif);
+            font-style: italic;
+            font-weight: 500;
+            color: var(--crema);
+        }
+        .description span { font-family: inherit; }
+
+        .intro { font-size: 1.9rem; margin-bottom: 6px; }
+        .cierre { font-size: 1.9rem; margin: 6px 0 22px; text-wrap: balance; }
+
+        /* ESPECTADORA: el brillo original, ahora recorre todas las letras */
+        .greetings { margin: 4px 0; letter-spacing: .06em; }
+        .greetings > span:nth-child(6)  { animation-delay: 1s; }
+        .greetings > span:nth-child(7)  { animation-delay: 1.2s; }
+        .greetings > span:nth-child(8)  { animation-delay: 1.4s; }
+        .greetings > span:nth-child(9)  { animation-delay: 1.6s; }
+        .greetings > span:nth-child(10) { animation-delay: 1.8s; }
+        .greetings > span:nth-child(11) { animation-delay: 2s; }
+
+        .nota {
+            max-width: 44ch;
+            text-wrap: balance;
+            margin: 0 auto 30px;
+            font-family: var(--serif);
+            font-style: italic;
+            font-weight: 500;
+            font-size: 1.3rem;
+            line-height: 1.45;
+            color: #d9c89a;
+        }
+
+        /* Botón de entrada (antes un <a> dentro de un <button>) */
+        .button .enter {
+            display: inline-block;
+            padding: 13px 34px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            letter-spacing: .02em;
+            text-decoration: none;
+            color: #2b1405;
+            background: linear-gradient(180deg, #ffe066, #ffbf1f);
+            border-radius: 999px;
+            box-shadow: 0 0 18px rgba(255, 200, 58, .45);
+            transition: box-shadow .3s ease, transform .3s ease;
+        }
+        .button .enter:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 34px rgba(255, 214, 70, .85);
+        }
+        .button .enter:focus-visible { outline: 2px solid var(--crema); outline-offset: 4px; }
+
+        /* Entrada escalonada al abrir la página */
+        @keyframes aparecer { from { opacity: 0; transform: translateY(10px); } }
+        .reveal { animation: aparecer 1.1s ease var(--d, 0s) backwards; }
+
+        @media screen and (max-width: 574px) {
+            .intro, .cierre { font-size: 1.5rem; }
+            .greetings { font-size: clamp(1.3rem, 7.2vw, 2.3rem); }
+            .nota { font-size: 1.15rem; }
+            .button .enter { font-size: .95rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { animation: none; }
+            .button .enter { transition: none; }
+        }
+    </style>
 </head>
 <body>
 
-    <div class="description" style="color: aqua;">
-        <span>Porque conmigo nunca serás</span>
+    <!-- 1) Frase de inicio: se lee seguida con la palabra brillante de abajo -->
+    <div class="description intro reveal" style="--d: .2s">
+        <span>Para la amiga con transtorno de sueño</span>
     </div>
 
-    <div class="greetings">
-
+    <!-- 2) Palabra principal (cada letra brilla en cadena) -->
+    <div class="greetings reveal" style="--d: .9s" role="img" aria-label="espectadora">
+        <span>Y</span>
         <span>E</span>
-        <span>S</span>
-        <span>P</span>
+        <span>N</span>
+        <span>I</span>
+        <span>F</span>
         <span>E</span>
-        <!-- <span>&nbsp</span> -->
-        <span>C</span>
-        <span>T</span>
-        <span>A</span>
-        <span>D</span>
+        <span>R</span>
+        <!-- <span>D</span>
         <span>O</span>
         <span>R</span>
-        <span>A</span>
-
-    </div>
-    <div class="greetings">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
+        <span>A</span> -->
     </div>
 
-    <div class="description">
-        <span>Estas flores son para ti!</span>
+    <!-- 3) Cierre de la frase -->
+    <div class="description cierre reveal" style="--d: 1.8s">
+        <span>Noctes pulchrae.</span>
     </div>
-    
-    <div class="button">
-        <button>
-            <a href="FLORES.html">Haz Click Aqui<br>xd</a>
-        </button>
-        
+
+    <!-- 4) Nota y botón -->
+    <p class="nota reveal" style="--d: 2.6s">
+        Algunas flores se marchitan.<br>
+        algunos recuerdos no.
+    </p>
+
+    <div class="button reveal" style="--d: 3.2s">
+        <a class="enter" href="FLORES.html">Entrar al jardín</a>
     </div>
 </body>
 </html>
